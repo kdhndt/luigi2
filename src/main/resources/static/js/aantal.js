@@ -1,5 +1,6 @@
 "use strict";
-import {setText, toon} from "./util";
+// extensie is belangrijk voor werking!
+import {setText, toon} from "./util.js";
 
 // This could be considered an alternative to Thymeleaf and MVC, we're still showing frontend and using backend from the same application
 // But we're using a RestController, meaning others can use the backend too (native mobile phones/tablets, other applications, a different frontend)
