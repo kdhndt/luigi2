@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pizza's met prijs tussen</title>
+    <script src="js/prijstussen.js" type="module" defer></script>
+    <link rel="icon" href="images/luigi.ico" type="image/x-icon">
+    <link rel="stylesheet" href="css/luigi.css">
+</head>
+<body>
+<div><a href="index.html">Menu</a></div>
+<h1>Pizza's met prijs tussen</h1>
+
+<label>Van:
+    <span id="fouteInvoerVan" class="fout" hidden>Getal moet positief zijn.</span>
+    <input id="van" type="number" min="0" required autofocus step="0.01">
+</label>
+<label>Tot:
+    <span id="fouteInvoerTot" class="fout" hidden>Getal moet positief zijn.</span>
+    <input id="tot" type="number" min="0" required step="0.01">
+</label>
+<button id="zoek">Zoek</button>
+
+<table id="pizzasTable" hidden>
+    <thead>
+    <tr>
+        <th>id</th>
+        <th>naam</th>
+        <th>prijs</th>
+    </tr>
+    </thead>
+    <tbody id="pizzasBody">
+
+    </tbody>
+</table>
+<div id="storing" class="fout" hidden>Storing, contacteer helpdesk.</div>
+</body>
+</html>

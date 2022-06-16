@@ -2,24 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Pizza's</title>
-    <script src="js/allepizzas.js" type="module" defer></script>
+    <title>Pizza's met woord in naam</title>
+    <script src="js/naambevat.js" type="module" defer></script>
     <link rel="icon" href="images/luigi.ico" type="image/x-icon">
     <link rel="stylesheet" href="css/luigi.css">
 </head>
 <body>
 <div><a href="index.html">Menu</a></div>
-<h1>Pizza's</h1>
-<table>
+<h1>Pizza's met woord in naam</h1>
+<label>Woord:
+    <span id="woordFout" class="fout" hidden>Woord moet ingevuld zijn.</span>
+    <input id="woord" type="text" required autofocus>
+</label>
+<button id="zoek">Zoek</button>
+
+<table id="pizzasTable" hidden>
     <thead>
     <tr>
         <th>id</th>
         <th>naam</th>
         <th>prijs</th>
-        <th>verwijder</th>
     </tr>
     </thead>
-    <tbody id="pizzasBody"></tbody>
+    <tbody id="pizzasBody">
+
+    </tbody>
 </table>
 <div id="storing" class="fout" hidden>Storing, contacteer helpdesk.</div>
 </body>

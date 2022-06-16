@@ -1,10 +1,12 @@
 package be.vdab.luigi2.services;
 
 import be.vdab.luigi2.domain.Pizza;
+import be.vdab.luigi2.dto.NieuwePizza;
 import be.vdab.luigi2.repositories.PizzaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,5 +29,25 @@ public class PizzaService {
 
     public List<Pizza> findAll() {
         return pizzaRepository.findAll();
+    }
+
+    public List<Pizza> findByNaamBevat(String woord) {
+        return pizzaRepository.findByNaamBevat(woord);
+    }
+
+    public List<Pizza> findByPrijsTussen(BigDecimal van, BigDecimal tot) {
+        return pizzaRepository.findByPrijsTussen(van, tot);
+    }
+
+    @Transactional
+    public void delete(long id) {
+        pizzaRepository.delete(id);
+    }
+
+    @Transactional
+    public long create(NieuwePizza nieuwePizza) {
+        var winst = nieuwePizza.prijs().multiply(BigDecimal.valueOf(0.1));
+        var pizza = new Pizza(nieuwePizza.naam(), nieuwePizza.prijs(), winst);
+        return pizzaRepository.create(pizza);
     }
 }

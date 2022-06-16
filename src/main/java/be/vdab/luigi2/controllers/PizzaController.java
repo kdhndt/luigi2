@@ -1,13 +1,12 @@
 package be.vdab.luigi2.controllers;
 
 import be.vdab.luigi2.domain.Pizza;
+import be.vdab.luigi2.dto.NieuwePizza;
 import be.vdab.luigi2.exceptions.PizzaNietGevondenException;
 import be.vdab.luigi2.services.PizzaService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.util.stream.Stream;
 
@@ -53,4 +52,32 @@ class PizzaController {
                 .map(pizza -> new IdNaamPrijs(pizza));
     }
 
+    // voeg ook value = "pizzas" toe als die nog niet in de @RequestMapping zit
+    @GetMapping(params = "naamBevat")
+    Stream<IdNaamPrijs> findByNaamBevat(String naamBevat) {
+        return pizzaService.findByNaamBevat(naamBevat)
+                .stream()
+                .map(pizza -> new IdNaamPrijs(pizza));
+    }
+
+    @GetMapping(params = {"vanPrijs", "totPrijs"})
+    Stream<IdNaamPrijs> findByPrijsTussen(BigDecimal vanPrijs, BigDecimal totPrijs) {
+        return pizzaService.findByPrijsTussen(vanPrijs, totPrijs)
+                .stream()
+                .map(pizza -> new IdNaamPrijs(pizza));
+    }
+
+    @DeleteMapping("{id}")
+    void delete(@PathVariable long id) {
+        pizzaService.delete(id);
+    }
+
+    @PostMapping
+    // _request_ body (dit is de JSON die ik invoer bij generated requests, Postman, andere applicatie, o.i.d)
+    long create(@RequestBody @Valid NieuwePizza nieuwePizza) {
+        // binnenkomende JSON wordt vertaald naar een NieuwePizza object
+        var id = pizzaService.create(nieuwePizza);
+        // dit wordt dan getoond in de _response_ body
+        return id;
+    }
 }
