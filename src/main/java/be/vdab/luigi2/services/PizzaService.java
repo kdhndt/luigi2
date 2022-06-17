@@ -1,8 +1,12 @@
 package be.vdab.luigi2.services;
 
 import be.vdab.luigi2.domain.Pizza;
+import be.vdab.luigi2.domain.PizzaPrijs;
 import be.vdab.luigi2.dto.NieuwePizza;
+import be.vdab.luigi2.exceptions.PizzaBestaatAlException;
+import be.vdab.luigi2.repositories.PizzaPrijsRepository;
 import be.vdab.luigi2.repositories.PizzaRepository;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,9 +18,11 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class PizzaService {
     private final PizzaRepository pizzaRepository;
+    private final PizzaPrijsRepository pizzaPrijsRepository;
 
-    public PizzaService(PizzaRepository pizzaRepository) {
+    public PizzaService(PizzaRepository pizzaRepository, PizzaPrijsRepository pizzaPrijsRepository) {
         this.pizzaRepository = pizzaRepository;
+        this.pizzaPrijsRepository = pizzaPrijsRepository;
     }
 
     public long findAantal() {
@@ -46,8 +52,25 @@ public class PizzaService {
 
     @Transactional
     public long create(NieuwePizza nieuwePizza) {
-        var winst = nieuwePizza.prijs().multiply(BigDecimal.valueOf(0.1));
-        var pizza = new Pizza(nieuwePizza.naam(), nieuwePizza.prijs(), winst);
-        return pizzaRepository.create(pizza);
+        try {
+            var winst = nieuwePizza.prijs().multiply(BigDecimal.valueOf(0.1));
+            var pizza = new Pizza(nieuwePizza.naam(), nieuwePizza.prijs(), winst);
+            return pizzaRepository.create(pizza);
+            // Door een unieke index te plaatsen op de naam kolom weten we dat het mogelijk is dat men probeert een dubbel toe te voegen
+            // Vang dit hier op en geef handige informatie mee zodat de applicatie niet hoeft te stoppen
+        } catch (DuplicateKeyException ex) {
+            throw new PizzaBestaatAlException(nieuwePizza.naam());
+        }
+
+    }
+
+    @Transactional
+    public void updatePrijs(PizzaPrijs pizzaPrijs) {
+        pizzaRepository.updatePrijs(pizzaPrijs.getPrijs(), pizzaPrijs.getPizzaId());
+        pizzaPrijsRepository.create(pizzaPrijs);
+    }
+
+    public List<PizzaPrijs> findPrijzen(long id) {
+        return pizzaPrijsRepository.findByPizzaId(id);
     }
 }

@@ -1,15 +1,20 @@
 package be.vdab.luigi2.controllers;
 
 import be.vdab.luigi2.domain.Pizza;
+import be.vdab.luigi2.domain.PizzaPrijs;
 import be.vdab.luigi2.dto.NieuwePizza;
 import be.vdab.luigi2.exceptions.PizzaNietGevondenException;
 import be.vdab.luigi2.services.PizzaService;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
+@Validated
 @RequestMapping("pizzas")
 @RestController
 class PizzaController {
@@ -79,5 +84,26 @@ class PizzaController {
         var id = pizzaService.create(nieuwePizza);
         // dit wordt dan getoond in de _response_ body
         return id;
+    }
+
+    @PatchMapping("{id}/prijs")
+    // request body bevat maar één waarde, dus er hoeft geen aparte record aangemaakt worden
+    // validation annotations worden dan hier geplaatst, plaats de @Validated annotation voor PizzaController
+    void updatePrijs(@PathVariable long id, @RequestBody @PositiveOrZero BigDecimal prijs) {
+        var pizzaPrijs = new PizzaPrijs(prijs, id);
+        pizzaService.updatePrijs(pizzaPrijs);
+    }
+
+    private record PrijsVanaf(BigDecimal prijs, LocalDateTime vanaf) {
+        PrijsVanaf(PizzaPrijs pizzaPrijs) {
+            this(pizzaPrijs.getPrijs(), pizzaPrijs.getVanaf());
+        }
+    }
+
+    @GetMapping("pizzas/{id}/prijzen")
+    Stream<PrijsVanaf> findPrijzen(@PathVariable long id) {
+        return pizzaService.findPrijzen(id)
+                .stream()
+                .map(pizzaPrijs -> new PrijsVanaf(pizzaPrijs.getPrijs(), pizzaPrijs.getVanaf()));
     }
 }

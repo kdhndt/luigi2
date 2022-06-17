@@ -17,9 +17,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
@@ -29,6 +28,7 @@ class PizzaControllerTest extends AbstractTransactionalJUnit4SpringContextTests 
     private final static String PIZZAS = "pizzas";
     private final MockMvc mockMvc;
     private static final Path TEST_RESOURCES = Path.of("src/test/resources");
+    private final static String PIZZA_PRIJZEN = "pizzaprijzen";
 
     public PizzaControllerTest(MockMvc mockMvc) {
         this.mockMvc = mockMvc;
@@ -116,9 +116,9 @@ class PizzaControllerTest extends AbstractTransactionalJUnit4SpringContextTests 
 
         // we hebben het aangemaakt id nodig, dit zal in de responseBody zitten
         var responseBody = mockMvc.perform(post("/pizzas")
-                // request header type instellen, net zoals bij generated-requests.http
-                .contentType(MediaType.APPLICATION_JSON)
-                // dit is niet de ideale manier (geen kleuren syntax en controle)
+                                // request header type instellen, net zoals bij generated-requests.http
+                                .contentType(MediaType.APPLICATION_JSON)
+                                // dit is niet de ideale manier (geen kleuren syntax en controle)
 /*                .content(
                         """
                         {
@@ -127,7 +127,7 @@ class PizzaControllerTest extends AbstractTransactionalJUnit4SpringContextTests 
                         }
                         """
                 )*/
-                .content(jsonData)
+                                .content(jsonData)
                 )
                 .andExpect(status().isOk())
                 // response body er ook daadwerkelijk uit halen
@@ -138,11 +138,51 @@ class PizzaControllerTest extends AbstractTransactionalJUnit4SpringContextTests 
     @ParameterizedTest
     @ValueSource(strings = {"pizzaMetLegeNaam.json", "pizzaMetNegatievePrijs.json", "pizzaZonderNaam.json", "pizzaZonderPrijs.json"})
     void createMetVerkeerdeDataMislukt(String bestandsNaam) throws Exception {
-        var jsonData= Files.readString(TEST_RESOURCES.resolve(bestandsNaam));
+        var jsonData = Files.readString(TEST_RESOURCES.resolve(bestandsNaam));
         mockMvc.perform(post("/pizzas")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonData))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonData))
                 .andExpect(status().isBadRequest());
     }
 
+
+    @Test
+    void updatePrijs() throws Exception {
+        var id = idVanTest1Pizza();
+        mockMvc.perform(patch("/pizzas/{id}/prijs", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("15")
+                )
+                .andExpectAll(status().isOk());
+        assertThat(countRowsInTableWhere(PIZZA_PRIJZEN, "prijs = 15 and pizzaId=" + id)).isOne();
+        assertThat(countRowsInTableWhere(PIZZAS, "prijs = 15 and id=" + id)).isOne();
+    }
+
+    @Test
+    void patchVanOnbestaandePizzaMislukt() throws Exception {
+        mockMvc.perform(patch("/pizzas/{id}/prijs", Long.MAX_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("1.1"))
+                .andExpect(status().isNotFound());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "-0.01"})
+    void patchMetVerkeerdePrijzenMislukt(String jsonData) throws Exception {
+        var id = idVanTest1Pizza();
+        mockMvc.perform(patch("/pizzas/{id}/prijs", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonData))
+                .andExpect(status().isBadRequest());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"pizzaDieAlBestaat.json"})
+    void eenPizzaMetNaamDieReedsBestaatToevoegenMislukt(String bestandNaam) throws Exception {
+        var jsonData = Files.readString(TEST_RESOURCES.resolve(bestandNaam));
+        mockMvc.perform(post("/pizzas")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonData))
+                .andExpect(status().isConflict());
+    }
 }

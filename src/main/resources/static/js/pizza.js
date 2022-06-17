@@ -19,6 +19,7 @@ function verbergPizzaEnFouten() {
     verberg("zoekIdFout");
     verberg("nietGevonden");
     verberg("storing");
+    verberg("nieuwePrijsFout");
 }
 
 async function findById(id) {
@@ -36,4 +37,42 @@ async function findById(id) {
             toon("storing");
         }
     }
+}
+
+byId("bewaar").onclick = async function () {
+    const nieuwePrijs = byId("nieuwePrijs");
+    if (!nieuwePrijs.checkValidity()) {
+        toon("nieuwePrijsFout");
+        nieuwePrijs.focus();
+        return
+    }
+    verberg("nieuwePrijsFout");
+    // JavaScript object
+    const wijzigPrijs = {
+        prijs: nieuwePrijs.value
+    };
+    await updatePrijs(wijzigPrijs);
+}
+
+async function updatePrijs(wijzigPrijs) {
+    // onderstaande kan, method interpolatie i.p.v. een aparte local variabele aan te maken
+    const response = await fetch(`pizzas/${byId("zoekId").value}/prijs`,
+        {
+            method: "PATCH",
+            headers: {"Content-Type": "application/json"},
+            // JavaScript object naar JSON string, spreek het prijs veld aan!
+            // anders krijg je {"prijs":"4"}
+            body: JSON.stringify(wijzigPrijs.prijs)
+        });
+    // console.log(JSON.stringify(wijzigPrijs));
+    if (response.ok) {
+        setText("prijs", wijzigPrijs.prijs)
+    } else {
+        toon("storing");
+    }
+}
+
+byId("prijzen").onclick = function () {
+    const idEnNaam = {id: byId("zoekId").value, naam: byId("naam").innerText}
+    sessionStorage.setItem("idEnNaam", JSON.stringify(idEnNaam));
 }
