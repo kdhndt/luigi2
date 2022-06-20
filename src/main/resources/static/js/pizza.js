@@ -73,6 +73,6 @@ async function updatePrijs(wijzigPrijs) {
 }
 
 byId("prijzen").onclick = function () {
-    const idEnNaam = {id: byId("zoekId").value, naam: byId("naam").innerText}
+    const idEnNaam = {id: byId("zoekId").value, naam: byId("naam").innerText};
     sessionStorage.setItem("idEnNaam", JSON.stringify(idEnNaam));
 }

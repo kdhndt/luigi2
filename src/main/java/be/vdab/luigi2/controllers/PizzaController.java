@@ -100,7 +100,7 @@ class PizzaController {
         }
     }
 
-    @GetMapping("pizzas/{id}/prijzen")
+    @GetMapping("{id}/prijzen")
     Stream<PrijsVanaf> findPrijzen(@PathVariable long id) {
         return pizzaService.findPrijzen(id)
                 .stream()
